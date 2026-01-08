@@ -1,343 +1,454 @@
-    
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ELI5 Knowledge Mapper</title>
     <style>
-        /* Reset and base styles */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background: #f9fafb;
-            color: #1f2937;
-            line-height: 1.6;
-            padding: 2rem 1rem;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
         }
 
-        /* Header styles */
         header {
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: 40px;
+            padding: 20px;
         }
 
         h1 {
-            font-size: 2.25rem;
-            margin-bottom: 0.5rem;
-            color: #111827;
+            font-size: 2.8rem;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
         }
 
-        h2 {
-            font-size: 1.25rem;
-            color: #4b5563;
-            font-weight: normal;
-        }
-
-        /* Input section */
-        .input-section {
-            display: flex;
-            gap: 0.75rem;
+        .subtitle {
+            font-size: 1.2rem;
+            color: #7f8c8d;
             max-width: 600px;
-            margin: 0 auto 2rem;
-            flex-wrap: wrap;
+            margin: 0 auto;
+            line-height: 1.5;
         }
 
-        #concept-input {
+        .input-section {
+            max-width: 600px;
+            margin: 0 auto 40px;
+            padding: 30px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        #conceptInput {
             flex: 1;
-            min-width: 200px;
-            padding: 0.75rem 1rem;
-            border: 1px solid #d1d5db;
-            border-radius: 0.5rem;
-            font-size: 1rem;
+            padding: 15px 20px;
+            font-size: 1.1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            outline: none;
+            transition: all 0.3s ease;
         }
 
-        #generate-btn {
-            padding: 0.75rem 1.5rem;
-            background: #3b82f6;
+        #conceptInput:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+
+        #generateBtn {
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            background: linear-gradient(90deg, #3498db, #2ecc71);
             color: white;
             border: none;
-            border-radius: 0.5rem;
-            font-size: 1rem;
+            border-radius: 12px;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: all 0.3s ease;
+            font-weight: 600;
         }
 
-        #generate-btn:hover {
-            background: #2563eb;
+        #generateBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
         }
 
-        /* Results section */
-        #results {
+        #generateBtn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
             display: none;
-            max-width: 800px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .map-container {
+            max-width: 1200px;
             margin: 0 auto;
+            min-height: 500px;
+        }
+
+        #knowledgeMap {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            padding: 20px;
         }
 
         .node {
             background: white;
-            padding: 1.5rem;
-            border-radius: 1rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-            margin-bottom: 1.5rem;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
 
-        .main-concept {
-            background: #dbeafe;
-            border-left: 4px solid #3b82f6;
+        .node:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
         }
 
-        .subtopic {
-            background: #f3f4f6;
+        .main-node {
+            border-top: 6px solid #3498db;
+            grid-column: 1 / -1;
+            max-width: 800px;
+            margin: 0 auto;
         }
 
-        .node h3 {
-            margin-bottom: 0.5rem;
-            color: #1e40af;
+        .subtopic-node {
+            border-top: 6px solid #2ecc71;
         }
 
-        .node p {
-            color: #374151;
+        .node-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
         }
 
-        /* Loading indicator */
-        #loading {
+        .node-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .main-node .node-icon {
+            background: #3498db;
+        }
+
+        .subtopic-node .node-icon {
+            background: #2ecc71;
+        }
+
+        .node-title {
+            font-size: 1.4rem;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .node-content {
+            color: #555;
+            line-height: 1.6;
+            font-size: 1.05rem;
+            white-space: pre-line;
+        }
+
+        .explanation-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border-left: 4px solid #3498db;
+        }
+
+        .error {
+            background: #ffecec;
+            border-left: 4px solid #e74c3c;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
             display: none;
-            text-align: center;
-            margin: 2rem auto;
-            color: #4b5563;
         }
 
-        /* Responsive adjustments */
-        @media (max-width: 600px) {
-            .input-section {
-                flex-direction: column;
-            }
+        @media (max-width: 768px) {
+            h1 { font-size: 2.2rem; }
+            .subtitle { font-size: 1rem; }
+            .input-group { flex-direction: column; }
+            #knowledgeMap { grid-template-columns: 1fr; }
+            .node { padding: 20px; }
+        }
 
-            #generate-btn {
-                width: 100%;
-            }
-
-            h1 {
-                font-size: 1.75rem;
-            }
-
-            h2 {
-                font-size: 1rem;
-            }
+        @media (max-width: 480px) {
+            body { padding: 10px; }
+            header { padding: 10px; }
+            .input-section { padding: 20px; }
         }
     </style>
 </head>
 <body>
-    <!-- Header Section -->
     <header>
         <h1>ELI5 Knowledge Mapper</h1>
-        <h2>Type a concept and get a simple explanation with sub-topics!</h2>
+        <p class="subtitle">Type a concept and get a simple explanation with sub-topics! Everything explained like you're five years old.</p>
     </header>
 
-    <!-- Input and Button Section -->
-    <div class="input-section">
-        <input
-            type="text"
-            id="concept-input"
-            placeholder="e.g., photosynthesis, gravity, blockchain..."
-            aria-label="Enter a concept to explain"
-        />
-        <button id="generate-btn">Generate Map</button>
-    </div>
+    <section class="input-section">
+        <div class="input-group">
+            <input 
+                type="text" 
+                id="conceptInput" 
+                placeholder="Enter any concept (e.g., Photosynthesis, Gravity, Democracy)..."
+                maxlength="100"
+                value="Blockchain"
+            >
+            <button id="generateBtn">Generate Map</button>
+        </div>
+        
+        <div class="loading" id="loadingIndicator">
+            <div class="spinner"></div>
+            <p>Thinking like a 5-year-old... This might take a moment.</p>
+        </div>
+        
+        <div class="error" id="errorMessage">
+            <strong>Oops!</strong> <span id="errorText"></span>
+        </div>
+    </section>
 
-    <!-- Loading Indicator -->
-    <div id="loading">Generating your knowledge map...</div>
-
-    <!-- Results Section -->
-    <div id="results">
-        <div id="main-concept" class="node main-concept"></div>
-        <div id="subtopics-container"></div>
-    </div>
+    <section class="map-container">
+        <div id="knowledgeMap"></div>
+    </section>
 
     <script>
-        // DOM elements
-        const conceptInput = document.getElementById('concept-input');
-        const generateBtn = document.getElementById('generate-btn');
-        const loadingEl = document.getElementById('loading');
-        const resultsEl = document.getElementById('results');
-        const mainConceptEl = document.getElementById('main-concept');
-        const subtopicsContainer = document.getElementById('subtopics-container');
+        const conceptInput = document.getElementById('conceptInput');
+        const generateBtn = document.getElementById('generateBtn');
+        const knowledgeMap = document.getElementById('knowledgeMap');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const errorMessage = document.getElementById('errorMessage');
+        const errorText = document.getElementById('errorText');
 
-        // Cloudflare Worker endpoint (trimmed to avoid trailing space issues)
-        const API_URL = "https://groqproxy.nicholaskarlek.workers.dev/";
+        const API_URL = 'https://groqproxy.nicholaskarlek.workers.dev/';
 
-        // Event listener for button click
-        generateBtn.addEventListener('click', handleGenerateMap);
+        const fallbackData = {
+            explanation: "Hmm, I couldn't reach my thinking cap. Here's a simple example instead!",
+            subtopics: [
+                { name: "What it is", description: "The basic idea in simple words" },
+                { name: "Why it matters", description: "Why this thing is important to know" },
+                { name: "Fun fact", description: "Something cool about it that kids would love" }
+            ]
+        };
 
-        // Also trigger on Enter key in input
-        conceptInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                handleGenerateMap();
+        function renderKnowledgeMap(concept, explanation, subtopics) {
+            knowledgeMap.innerHTML = '';
+            
+            const mainNode = document.createElement('div');
+            mainNode.className = 'node main-node';
+            mainNode.innerHTML = `
+                <div class="node-header">
+                    <div class="node-icon">?</div>
+                    <h2 class="node-title">${concept}</h2>
+                </div>
+                <div class="explanation-section">
+                    <div class="node-content">${explanation}</div>
+                </div>
+                <p><em>Here are 3 key parts to understand:</em></p>
+            `;
+            knowledgeMap.appendChild(mainNode);
+            
+            subtopics.forEach((subtopic, index) => {
+                const subtopicNode = document.createElement('div');
+                subtopicNode.className = 'node subtopic-node';
+                subtopicNode.innerHTML = `
+                    <div class="node-header">
+                        <div class="node-icon">${index + 1}</div>
+                        <h3 class="node-title">${subtopic.name}</h3>
+                    </div>
+                    <div class="node-content">
+                        ${subtopic.description || 'No description available'}
+                    </div>
+                `;
+                knowledgeMap.appendChild(subtopicNode);
+            });
+        }
+
+        async function fetchExplanation(concept) {
+            try {
+                showLoading(true);
+                hideError();
+                
+                // First request: Get the subtopics as JSON array
+                const subtopicsResponse = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        model: "meta-llama/llama-4-maverick-17b-128e-instruct",
+                        messages: [{
+                            role: "user",
+                            content: `Explain '${concept}' like I am five, and return ONLY a valid JSON array with 3 objects, each with 'name' and 'description' keys for subtopics. Do not include any explanation or other text, only the JSON.`
+                        }]
+                    })
+                });
+
+                if (!subtopicsResponse.ok) {
+                    throw new Error(`HTTP error! status: ${subtopicsResponse.status}`);
+                }
+
+                const subtopicsData = await subtopicsResponse.json();
+                console.log('Subtopics API response:', subtopicsData);
+                
+                // Parse the subtopics JSON array from the response
+                let subtopics = [];
+                try {
+                    const content = subtopicsData.choices?.[0]?.message?.content || '[]';
+                    subtopics = JSON.parse(content);
+                    if (!Array.isArray(subtopics)) {
+                        subtopics = fallbackData.subtopics;
+                    }
+                } catch (e) {
+                    console.error('Error parsing subtopics JSON:', e);
+                    subtopics = fallbackData.subtopics;
+                }
+                
+                // Second request: Get the ELI5 explanation
+                const explanationResponse = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        model: "meta-llama/llama-4-maverick-17b-128e-instruct",
+                        messages: [{
+                            role: "user",
+                            content: `Explain '${concept}' like I am five years old. Give a simple, fun explanation that a child would understand. Keep it to 2-3 sentences.`
+                        }]
+                    })
+                });
+
+                if (!explanationResponse.ok) {
+                    throw new Error(`HTTP error! status: ${explanationResponse.status}`);
+                }
+
+                const explanationData = await explanationResponse.json();
+                console.log('Explanation API response:', explanationData);
+                
+                // Get the explanation text
+                let explanation = '';
+                try {
+                    explanation = explanationData.choices?.[0]?.message?.content || 
+                                 `Here's what "${concept}" means in simple words!`;
+                } catch (e) {
+                    explanation = `Let me explain "${concept}" in simple terms!`;
+                }
+                
+                renderKnowledgeMap(concept, explanation, subtopics);
+                
+            } catch (error) {
+                console.error('Error fetching explanation:', error);
+                showError('Could not fetch explanation. Using fallback data.');
+                renderKnowledgeMap(concept, fallbackData.explanation, fallbackData.subtopics);
+            } finally {
+                showLoading(false);
             }
-        });
+        }
 
-        /**
-         * Main function to handle the generation flow
-         */
-        async function handleGenerateMap() {
+        function showLoading(show) {
+            loadingIndicator.style.display = show ? 'block' : 'none';
+            generateBtn.disabled = show;
+        }
+
+        function showError(message) {
+            errorText.textContent = message;
+            errorMessage.style.display = 'block';
+        }
+
+        function hideError() {
+            errorMessage.style.display = 'none';
+        }
+
+        function validateInput() {
             const concept = conceptInput.value.trim();
             if (!concept) {
-                alert('Please enter a concept.');
-                return;
+                showError('Please enter a concept to explain!');
+                return false;
             }
-
-            // Show loading, hide results
-            loadingEl.style.display = 'block';
-            resultsEl.style.display = 'none';
-
-            try {
-                // Call the AI API
-                const data = await fetchExplanation(concept);
-                // Render the results
-                renderResults(data, concept);
-            } catch (error) {
-                console.error('Error:', error);
-                // Fallback on error
-                renderResults(null, concept);
-            } finally {
-                loadingEl.style.display = 'none';
+            if (concept.length < 2) {
+                showError('Please enter a longer concept (at least 2 characters)');
+                return false;
             }
+            hideError();
+            return true;
         }
 
-        /**
-         * Fetch explanation from Cloudflare Worker
-         */
-        async function fetchExplanation(concept) {
-            const payload = {
-                model: "meta-llama/llama-4-maverick-17b-128e-instruct",
-                messages: [{
-                    role: "user",
-                    content: `Explain '${concept}' like I am five, and return 3 subtopics in JSON format with keys 'name' and 'description'.`
-                }]
-            };
-
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(payload)
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const result = await response.json();
-            return result;
+        async function handleGenerate() {
+            if (!validateInput()) return;
+            
+            const concept = conceptInput.value.trim();
+            await fetchExplanation(concept);
         }
 
-        /**
-         * Parse and normalize the response from the AI
-         */
-        function normalizeResponse(rawData) {
-            // Fallback structure
-            const fallback = {
-                explanation: "We couldn't get a clear explanation, but here's a simple idea!",
-                subtopics: [
-                    { name: "Basics", description: "This is the foundation of the concept." },
-                    { name: "How it works", description: "A simple look at the inner workings." },
-                    { name: "Why it matters", description: "Why this concept is important in real life." }
-                ]
-            };
-
-            if (!rawData || typeof rawData !== 'object') {
-                return fallback;
-            }
-
-            // Try to parse the response content
-            let content = '';
-            if (rawData.choices && rawData.choices[0] && rawData.choices[0].message) {
-                content = rawData.choices[0].message.content;
-            } else if (rawData.result && typeof rawData.result === 'string') {
-                content = rawData.result;
-            } else {
-                return fallback;
-            }
-
-            // Attempt to extract JSON from the content
-            let parsed;
-            try {
-                // Find the first JSON-like structure in the string
-                const jsonMatch = content.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
-                if (jsonMatch) {
-                    parsed = JSON.parse(jsonMatch[0]);
-                } else {
-                    throw new Error('No JSON found');
+        function init() {
+            generateBtn.addEventListener('click', handleGenerate);
+            
+            conceptInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    handleGenerate();
                 }
-            } catch (e) {
-                console.warn('Failed to parse JSON from AI response, using fallback structure.');
-                return fallback;
-            }
-
-            // Handle two possible formats:
-            // Format 1: { explanation: "...", subtopics: [...] }
-            if (parsed.explanation && Array.isArray(parsed.subtopics)) {
-                return {
-                    explanation: parsed.explanation,
-                    subtopics: parsed.subtopics.slice(0, 3).map(st => ({
-                        name: st.name || `Subtopic ${index + 1}`,
-                        description: st.description || "No description provided."
-                    }))
-                };
-            }
-            // Format 2: Array of subtopics only
-            else if (Array.isArray(parsed)) {
-                return {
-                    explanation: `Here's a simple explanation of "${conceptInput.value.trim()}".`,
-                    subtopics: parsed.slice(0, 3).map((st, index) => ({
-                        name: st.name || `Subtopic ${index + 1}`,
-                        description: st.description || "No description provided."
-                    }))
-                };
-            }
-
-            // If none of the formats match, use fallback
-            return fallback;
-        }
-
-        /**
-         * Render the explanation and subtopics in the DOM
-         */
-        function renderResults(rawData, concept) {
-            const data = rawData ? normalizeResponse(rawData) : null;
-            const fallback = normalizeResponse(null);
-
-            const explanation = data?.explanation || fallback.explanation;
-            const subtopics = data?.subtopics || fallback.subtopics;
-
-            // Render main concept
-            mainConceptEl.innerHTML = `
-                <h3>Main Concept: ${concept}</h3>
-                <p>${explanation}</p>
-            `;
-
-            // Render subtopics
-            subtopicsContainer.innerHTML = '';
-            subtopics.forEach(subtopic => {
-                const subtopicEl = document.createElement('div');
-                subtopicEl.className = 'node subtopic';
-                subtopicEl.innerHTML = `
-                    <h3>${subtopic.name}</h3>
-                    <p>${subtopic.description}</p>
-                `;
-                subtopicsContainer.appendChild(subtopicEl);
             });
-
-            // Show results
-            resultsEl.style.display = 'block';
+            
+            // Initial render with example
+            renderKnowledgeMap(
+                'Example: Photosynthesis',
+                "It's how plants make their food using sunlight, just like how we eat sandwiches! Plants take sunlight, water, and air to make sugar they can eat.",
+                [
+                    { name: "Sunlight Power", description: "Plants use sunlight like a magic ingredient to start cooking their food" },
+                    { name: "Leaf Kitchen", description: "Leaves are like tiny kitchens where the food-making happens" },
+                    { name: "Oxygen Gift", description: "Plants give us clean air to breathe while they make their food" }
+                ]
+            );
         }
+
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
