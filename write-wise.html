@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WriteWise - AI Writing Assistant</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+            color: white;
+            animation: fadeIn 1s ease;
+        }
+
+        header h1 {
+            font-size: 3.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        header p {
+            font-size: 1.4rem;
+            max-width: 700px;
+            margin: 0 auto;
+            opacity: 0.9;
+        }
+
+        .app-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .input-section {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .output-section {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            color: #3498db;
+        }
+
+        textarea {
+            width: 100%;
+            height: 300px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .control-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .btn-secondary {
+            background: #2ecc71;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #27ae60;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .btn-tertiary {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-tertiary:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .btn-quaternary {
+            background: #9b59b6;
+            color: white;
+        }
+
+        .btn-quaternary:hover {
+            background: #8e44ad;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .output-content {
+            flex: 1;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            overflow-y: auto;
+            border: 1px solid #e9ecef;
+            min-height: 300px;
+        }
+
+        .placeholder-text {
+            color: #6c757d;
+            font-style: italic;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid #3498db;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        .examples {
+            margin-top: 30px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .examples h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .example-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .example-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            transition: transform 0.3s;
+        }
+
+        .example-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+        }
+
+        .example-card h3 {
+            color: #3498db;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .example-card p {
+            color: #555;
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            padding: 30px 0;
+            margin-top: 40px;
+            font-size: 1.1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .app-container {
+                flex-direction: column;
+            }
+            
+            header h1 {
+                font-size: 2.5rem;
+            }
+            
+            header p {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-pen-fancy"></i> WriteWise</h1>
+            <p>AI-Powered Writing Assistant - Enhance, refine, and generate content with ease</p>
+        </header>
+
+        <div class="app-container">
+            <div class="input-section">
+                <h2 class="section-title"><i class="fas fa-edit"></i> Your Content</h2>
+                <textarea id="input-text" placeholder="Type or paste your content here...">The importance of renewable energy cannot be overstated in today's world. As we face the challenges of climate change, transitioning to clean energy sources like solar and wind power is crucial for our planet's future. These sources are sustainable, reduce greenhouse gas emissions, and offer long-term economic benefits.</textarea>
+                
+                <div class="controls">
+                    <div class="control-group">
+                        <label for="writing-task">Writing Task</label>
+                        <select id="writing-task">
+                            <option value="improve">Improve Writing</option>
+                            <option value="summarize">Summarize</option>
+                            <option value="expand">Expand Content</option>
+                            <option value="rewrite">Rewrite for Clarity</option>
+                            <option value="tone">Change Tone</option>
+                            <option value="proofread">Proofread & Fix Errors</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="tone">Tone (Optional)</label>
+                        <select id="tone">
+                            <option value="professional">Professional</option>
+                            <option value="casual">Casual</option>
+                            <option value="academic">Academic</option>
+                            <option value="creative">Creative</option>
+                            <option value="persuasive">Persuasive</option>
+                            <option value="informal">Informal</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button id="improve-btn" class="btn btn-primary">
+                        <i class="fas fa-magic"></i> Improve
+                    </button>
+                    <button id="summarize-btn" class="btn btn-secondary">
+                        <i class="fas fa-compress-alt"></i> Summarize
+                    </button>
+                    <button id="expand-btn" class="btn btn-tertiary">
+                        <i class="fas fa-expand-alt"></i> Expand
+                    </button>
+                    <button id="rewrite-btn" class="btn btn-quaternary">
+                        <i class="fas fa-sync-alt"></i> Rewrite
+                    </button>
+                </div>
+            </div>
+            
+            <div class="output-section">
+                <h2 class="section-title"><i class="fas fa-robot"></i> AI-Enhanced Output</h2>
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>AI is processing your content...</p>
+                </div>
+                <div class="output-content" id="output-content">
+                    <p class="placeholder-text">Your enhanced content will appear here. Enter some text and choose an action to get started.</p>
+                </div>
+                
+                <div class="action-buttons" style="margin-top: 20px;">
+                    <button id="copy-btn" class="btn btn-primary">
+                        <i class="fas fa-copy"></i> Copy Result
+                    </button>
+                    <button id="clear-btn" class="btn btn-tertiary">
+                        <i class="fas fa-trash-alt"></i> Clear
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="examples">
+            <h2><i class="fas fa-lightbulb"></i> Example Use Cases</h2>
+            <div class="example-cards">
+                <div class="example-card">
+                    <h3><i class="fas fa-graduation-cap"></i> Academic Writing</h3>
+                    <p>Improve thesis statements, enhance research papers, and ensure proper academic tone for essays and dissertations.</p>
+                </div>
+                <div class="example-card">
+                    <h3><i class="fas fa-briefcase"></i> Professional Documents</h3>
+                    <p>Refine business proposals, emails, reports, and presentations to communicate more effectively.</p>
+                </div>
+                <div class="example-card">
+                    <h3><i class="fas fa-blog"></i> Blogging & Content</h3>
+                    <p>Generate ideas, improve readability, and optimize content for your audience.</p>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Powered by Groq AI Technology | WriteWise - Transform Your Writing</p>
+        </footer>
+    </div>
+
+    <script>
+        // DOM Elements
+        const inputText = document.getElementById('input-text');
+        const outputContent = document.getElementById('output-content');
+        const loading = document.getElementById('loading');
+        const copyBtn = document.getElementById('copy-btn');
+        const clearBtn = document.getElementById('clear-btn');
+        
+        // Action buttons
+        const improveBtn = document.getElementById('improve-btn');
+        const summarizeBtn = document.getElementById('summarize-btn');
+        const expandBtn = document.getElementById('expand-btn');
+        const rewriteBtn = document.getElementById('rewrite-btn');
+        
+        // Select elements
+        const taskSelect = document.getElementById('writing-task');
+        const toneSelect = document.getElementById('tone');
+        
+        // API Configuration
+        const API_URL = "https://groqproxy.nicholaskarlek.workers.dev/";
+        const MODEL = "meta-llama/llama-4-maverick-17b-128e-instruct";
+        
+        // Event Listeners
+        improveBtn.addEventListener('click', () => processContent('improve'));
+        summarizeBtn.addEventListener('click', () => processContent('summarize'));
+        expandBtn.addEventListener('click', () => processContent('expand'));
+        rewriteBtn.addEventListener('click', () => processContent('rewrite'));
+        
+        copyBtn.addEventListener('click', copyToClipboard);
+        clearBtn.addEventListener('click', clearOutput);
+        
+        // Process content with AI
+        async function processContent(task) {
+            const text = inputText.value.trim();
+            if (!text) {
+                alert('Please enter some text to process');
+                return;
+            }
+            
+            // Show loading
+            loading.style.display = 'block';
+            outputContent.innerHTML = '';
+            
+            // Get selected tone
+            const tone = toneSelect.value;
+            
+            // Create prompt based on task
+            let prompt = '';
+            switch(task) {
+                case 'improve':
+                    prompt = `Improve the following text for clarity, coherence, and impact:\n\n${text}`;
+                    break;
+                case 'summarize':
+                    prompt = `Summarize the following text in 3-4 sentences:\n\n${text}`;
+                    break;
+                case 'expand':
+                    prompt = `Expand the following text with more details and examples:\n\n${text}`;
+                    break;
+                case 'rewrite':
+                    prompt = `Rewrite the following text in a ${tone} tone:\n\n${text}`;
+                    break;
+                default:
+                    prompt = `Improve the following text:\n\n${text}`;
+            }
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: MODEL,
+                        messages: [{ role: "user", content: prompt }]
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`API request failed with status ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // Extract the content from the response
+                let content = '';
+                if (data.choices && data.choices[0] && data.choices[0].message) {
+                    content = data.choices[0].message.content;
+                } else if (data.result) {
+                    content = data.result;
+                } else {
+                    throw new Error('Invalid response format');
+                }
+                
+                // Display the result
+                outputContent.innerHTML = `<p>${content.replace(/\n/g, '<br>')}</p>`;
+            } catch (error) {
+                console.error('Error:', error);
+                outputContent.innerHTML = `<p class="error">Error: ${error.message}. Please try again.</p>`;
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+        
+        // Copy output to clipboard
+        function copyToClipboard() {
+            const text = outputContent.innerText;
+            if (!text || text.includes('Your enhanced content will appear here')) {
+                alert('Nothing to copy!');
+                return;
+            }
+            
+            navigator.clipboard.writeText(text)
+                .then(() => {
+                    alert('Content copied to clipboard!');
+                })
+                .catch(err => {
+                    console.error('Failed to copy: ', err);
+                    alert('Failed to copy content. Please try again.');
+                });
+        }
+        
+        // Clear output
+        function clearOutput() {
+            outputContent.innerHTML = '<p class="placeholder-text">Your enhanced content will appear here. Enter some text and choose an action to get started.</p>';
+        }
+        
+        // Initialize with a sample task
+        window.addEventListener('load', () => {
+            processContent('improve');
+        });
+    </script>
+</body>
+</html>
